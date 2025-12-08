@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BnBeasy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>BnBeasy Smart Rental System</h1>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="/auth/login">Login</a> |
+            <a href="/listing/">Listings</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 BnBeasy</p>
+    </footer>
+</body>
+</html>
