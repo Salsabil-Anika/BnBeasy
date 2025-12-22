@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BnBeasy Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+
+    <label for="role">Login as:</label>
+    <select name="role" id="role" required>
+        <option value="traveller">Traveller</option>
+        <option value="host">Host</option>
+    </select>
+
+    <button type="submit">Login</button>
+</form>
+
+    <h2>Register</h2>
+<form action="{{ url_for('auth.register') }}" method="POST">
+    <input type="text" name="username" placeholder="Username" required><br>
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+
+    <label for="role">Sign up as:</label>
+    <select name="role" id="role" required>
+        <option value="traveller">Traveller</option>
+        <option value="host">Host</option>
+    </select><br>
+
+    <button type="submit">Register</button>
+</form>
+
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
