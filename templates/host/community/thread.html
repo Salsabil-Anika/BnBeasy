@@ -1,0 +1,113 @@
+<!-- templates/community/thread.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ thread.title }} - BnBeasy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #0c5461; 
+            color: #d1d5db;
+        }
+        .navbar {
+            background-color: rgba(12, 84, 97, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #237e73;
+        }
+        .card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+        }
+        .form-control {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+        .form-control:focus {
+            background-color: #4b5563;
+            border-color: #46e0c1;
+            box-shadow: 0 0 0 0.25rem rgba(70, 224, 193, 0.25);
+        }
+        .btn-primary {
+            background-color: #46e0c1;
+            border-color: #46e0c1;
+            color: #111827;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background-color: #a9ffe5;
+            border-color: #a9ffe5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Consistent Navbar -->
+    <nav class="navbar sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <h1 class="text-2xl font-bold text-white">BnBeasy</h1>
+                </div>
+                <div class="flex items-center">
+                    <a href="{{ url_for('host.dashboard') }}" class="py-2 px-4 bg-gray-700 text-gray-200 rounded-md hover:bg-gray-600 transition duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <!-- Original Post -->
+        <div class="card p-8 rounded-lg mb-8">
+            <h1 class="text-3xl font-bold text-white">{{ thread.title }}</h1>
+            <p class="text-sm text-gray-400 mt-2">Posted by <span class="font-semibold">{{ thread.role }}</span> on {{ thread.created_at.strftime('%B %d, %Y') }}</p>
+            <div class="prose prose-invert max-w-none text-gray-300 mt-6">
+                {{ thread.content }}
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card p-8 rounded-lg mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Comments ({{ thread.comments|length }})</h2>
+            <div class="space-y-6">
+                {% for comment in thread.comments %}
+                <div class="flex space-x-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-white">{{ comment.role }}</p>
+                        <p class="text-gray-400">{{ comment.comment }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Add a Comment Form -->
+        <div class="card p-8 rounded-lg">
+             <h2 class="text-2xl font-bold text-white mb-6">Leave a Comment</h2>
+             <form method="POST" action="{{ url_for('host_community.post_comment', thread_id=thread._id) }}">
+                <div>
+                    <textarea class="w-full rounded-md form-control p-3" name="comment" rows="4" required placeholder="Write your comment..."></textarea>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-lg font-semibold transition">Post Comment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

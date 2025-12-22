@@ -7,7 +7,6 @@ from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 import os
 
-
 @host_bp.route("/dashboard")
 def dashboard():
     if "user_id" not in session or session.get("role") != "host":

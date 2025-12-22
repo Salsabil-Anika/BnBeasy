@@ -37,7 +37,8 @@ def login():
 
         session["user_id"] = str(user["_id"])
         session["role"] = user["role"]
-
+        # store a friendly identifier used in templates
+        session["user"] = user.get("email") or user.get("name")
 
         if user["role"] == "host":
             return redirect(url_for("host.dashboard"))
@@ -51,7 +52,9 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
+    session.pop("user_id", None)
     session.pop("user", None)
+    session.pop("role", None)
     return redirect(url_for("auth.login"))
 
 

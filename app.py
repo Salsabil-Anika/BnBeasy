@@ -12,10 +12,18 @@ from host import host_bp
 from traveller import traveller_bp
 from traveller.traveler_profile_routes import traveler_profiles_bp
 
+# community blueprints (host and traveller)
+from host.community import community_bp as host_community_bp
+from traveller.community import community_bp as traveller_community_bp
+
 app.register_blueprint(auth_bp)
 app.register_blueprint(host_bp)
 app.register_blueprint(traveller_bp)
 app.register_blueprint(traveler_profiles_bp)
+
+# register community blueprints
+app.register_blueprint(host_community_bp)
+app.register_blueprint(traveller_community_bp)
 
 @app.route("/")
 def index():
