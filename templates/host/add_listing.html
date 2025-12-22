@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Add Property | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="padding-top: 2rem;">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h2>List Your Property</h2>
+            <p>Share your space with the world</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <input name="title" class="form-input" placeholder="Property Title" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <input name="city" class="form-input" placeholder="City" required>
+                </div>
+                <div class="form-group">
+                    <input name="location" class="form-input" placeholder="Specific Location" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="number" name="price" class="form-input" placeholder="Price per night ($)" required>
+            </div>
+
+            <div class="form-group">
+                <textarea name="description" class="form-input" placeholder="Describe your property..." rows="4"
+                    style="resize: vertical;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Cover Image</label>
+                <input type="file" name="image" class="form-input" accept="image/*" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Amenities</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Wifi"> Wifi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Kitchen"> Kitchen
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Parking"> Free Parking
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Pool"> Pool
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn">add Listing</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,540 @@
+<!--templates\traveler_profile.html-->
+<!-- Ei page ta hocche traveler er nijer profile page. Ekhane tar shob information, favorites, reviews ityadi thakbe. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile </title>
+    <!-- CSS and Font library gulo load kora hocche. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Profile picture crop korar jonno Cropper.js library. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <style>
+        /* Page er basic styling ekhane kora hoyeche. */
+        body {
+            font-family: 'Inter', sans-serif;
+            /*FINAL PALETTE: Using the darkest teal for the background*/
+            background-color: #0c5461;
+            color: #d1d5db;
+        }
+
+        .navbar {
+            background-color: rgba(12, 84, 97, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #237e73;
+            /*A slightly lighter teal for separation*/
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #ffffff !important;
+        }
+
+        .card,
+        .modal-container {
+            /*Using a neutral dark slate for cards to create depth*/
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 1rem;
+        }
+
+        .profile-pic {
+            /*FINAL PALETTE: Using the vibrant turquoise accent*/
+            border-color: #46e0c1;
+        }
+
+        .info-panel-header {
+            border-bottom-color: #374151;
+        }
+
+        .btn-primary {
+            /*FINAL PALETTE: Using the vibrant turquoise accent*/
+            background-color: #46e0c1;
+            border-color: #46e0c1;
+            color: #111827;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            /*FINAL PALETTE: Using the light aquamarine for hover*/
+            background-color: #a9ffe5;
+            border-color: #a9ffe5;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #4b5563;
+            border-color: #46e0c1;
+            box-shadow: 0 0 0 0.25rem rgba(70, 224, 193, 0.25);
+        }
+
+        /* Style for readonly fields */
+        .form-control:read-only {
+            background-color: #4b5563;
+            opacity: 0.7;
+        }
+
+        .modal-overlay {
+            background-color: rgba(12, 84, 97, 0.8);
+        }
+
+        .file-input-label {
+            cursor: pointer;
+        }
+
+        .img-container {
+            max-height: 400px;
+            margin-top: 1rem;
+        }
+
+        /* Styles for the new tabs */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #9ca3af;
+            /* gray-400 */
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .tab-button.active {
+            color: #46e0c1;
+            border-bottom-color: #46e0c1;
+        }
+
+        /* Tab er content prothome hidden thakbe. */
+        .tab-content {
+            display: none;
+        }
+
+        /* Shudhu active tab er content dekhabe. */
+        .tab-content.active {
+            display: block;
+        }
+
+        .star-color {
+            color: #f59e0b;
+            /* amber-500 */
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- Navigation bar -->
+    <nav class="navbar sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <h1 class="text-2xl font-bold text-white">BnBeasy</h1>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-400 mr-4">Welcome, {{ profile.first_name }}!</span>
+                    <a href="{{ url_for('traveller.home') }}"
+                        class="py-2 px-4 bg-gray-700 text-gray-200 rounded-md hover:bg-gray-600 transition duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main page content -->
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <!-- Flash messages: Kono action (e.g., profile update) er por success ba error message dekhabe. -->
+        <div id="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div
+                class="flash-message mb-4 rounded-md p-4 {{ 'bg-teal-900/50 text-teal-300 border border-teal-700' if category == 'success' else 'bg-red-900/50 text-red-300 border border-red-700' }}">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Bam Diker Column: Profile Card -->
+            <div class="lg-col-span-1">
+                <!-- Profile picture, naam, user ID, ebong bio. Data gulo `profile` object theke ashche. -->
+                <div class="card p-6 text-center">
+                    <img class="w-32 h-32 rounded-full mx-auto mb-4 border-4 profile-pic object-cover"
+                        src="{{ profile.profile_picture_url if profile.profile_picture_url else '' }}"
+                        alt="Profile Picture"
+                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ profile.first_name }}+{{ profile.last_name }}&background=46e0c1&color=111827';">
+                    <h2 class="text-2xl font-bold text-white">{{ profile.first_name }} {{ profile.last_name }}</h2>
+                    <p class="font-semibold" style="color: #a9ffe5;">{{ profile.user_id }}</p>
+                    <p class="text-gray-400 mt-4">{{ profile.bio or 'No bio available' }}</p>
+                    <!-- 'Edit Profile' button e click korle JavaScript diye modal open hobe. -->
+                    <button onclick="toggleModal('edit-profile-modal')"
+                        class="mt-6 w-full py-3 px-4 btn-primary rounded-md transition">Edit Profile &
+                        Preferences</button>
+                </div>
+                <!-- Preferences card: Budget ebong WiFi speed er preference dekhano hocche. -->
+                <div class="card p-6 mt-8">
+                    <h3 class="text-xl font-bold text-white border-b pb-4 info-panel-header">My Preferences</h3>
+                    <div class="space-y-4 mt-4">
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-400">Max Budget</p>
+                            <p class="font-semibold text-white">৳{{ profile.max_budget or 1000 }}/night</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-400">Min WiFi Speed</p>
+                            <p class="font-semibold text-white">{{ profile.min_wifi_speed or 25 }} Mbps</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dan Diker Column: Baki shob details tab আকারে dekhano hocche. -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Tab Buttons -->
+                <div class="card p-2 rounded-lg flex space-x-2">
+                    <button class="tab-button active w-full text-center" onclick="openTab(event, 'info')">
+                        <i class="fas fa-user mr-2"></i>My Information
+                    </button>
+                    <button class="tab-button w-full text-center" onclick="openTab(event, 'favorites')">
+                        <i class="fas fa-heart mr-2"></i>My Favorites
+                    </button>
+                    <button class="tab-button w-full text-center" onclick="openTab(event, 'reviews')">
+                        <i class="fas fa-star mr-2"></i>My Reviews
+                    </button>
+                </div>
+
+                <!-- Tab Content: My Information -->
+                <div id="info" class="tab-content active">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 info-panel-header">My Information</h3>
+                        <!-- User er personal information (email, phone, NID) dekhano hocche. -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Full Name</p>
+                                <p class="font-semibold text-gray-300">{{ profile.first_name }} {{ profile.last_name }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Email</p>
+                                <p class="font-semibold text-gray-300">{{ profile.email }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Phone</p>
+                                <p class="font-semibold text-gray-300">{{ profile.phone }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">NID Number</p>
+                                <p class="font-semibold text-gray-300">**********{{ profile.nid[-4:] if profile.nid and
+                                    len(profile.nid) >= 4 else '****' }} <i class="fas fa-lock text-gray-500 ml-1"></i>
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Date of Birth</p>
+                                <p class="font-semibold text-gray-300">{{ profile.dob }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-6 mt-8">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 info-panel-header">Current Travel Plans
+                        </h3>
+                        <p class="text-gray-400 mt-4">{{ profile.looking_for or 'Not specified yet.' }}</p>
+                    </div>
+                </div>
+
+                <!-- Tab Content: My Favorites -->
+                <div id="favorites" class="tab-content">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 border-gray-700">My Favorite Spaces</h3>
+                        <div class="mt-4">
+                            <!-- Backend theke `favorites` list e data thakle, loop chaliye prottekta favorite space dekhano hocche. -->
+                            {% if favorites %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {% for space in favorites %}
+                                <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col">
+                                    <img class="h-40 w-full object-cover"
+                                        src="{{ space.photos[0] if space.photos else 'https://placehold.co/600x400/1f2937/4b5563?text=No+Image' }}"
+                                        alt="{{ space.space_title }}">
+                                    <div class="p-4 flex flex-col flex-grow">
+                                        <h4 class="font-semibold text-white">{{ space.space_title }}</h4>
+                                        <p class="text-sm text-gray-400">{{ space.location_city }}</p>
+                                        <div class="mt-auto pt-2 flex justify-between items-center">
+                                            <p class="font-bold text-teal-400">৳{{ space.price_per_night }}/night</p>
+                                            <a href="#" class="text-red-500 hover:text-red-400 text-sm">
+                                                <i class="fas fa-trash-alt mr-1"></i>Remove
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <!-- Jodi kono favorite na thake, tahole ei message dekhabe. -->
+                            {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="far fa-heart fa-2x"></i>
+                                <p class="mt-2">You haven't saved any favorites yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: My Reviews -->
+                <div id="reviews" class="tab-content">
+                    <div class="card p-6 rounded-lg">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 border-gray-700">My Reviews</h3>
+                        <div class="mt-4 space-y-4">
+                            <!-- `reviews` list er upor loop chaliye user er deya shob review dekhano hocche. -->
+                            {% if reviews %}
+                            {% for review in reviews %}
+                            <div class="bg-gray-800 p-4 rounded-lg">
+                                <h4 class="font-semibold text-white">Review for: {{ review.space_details.space_title if
+                                    review.space_details else 'Unknown Space' }}</h4>
+                                <div class="flex items-center mt-1">
+                                    <div class="star-color">
+                                        {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-gray-400 mt-2">"{{ review.comment }}"</p>
+                                {% if review.photo_url %}<img src="{{ review.photo_url }}" alt="Review photo"
+                                    class="mt-2 rounded-lg max-w-xs">{% endif %}
+                            </div>
+                            {% endfor %}
+                            <!-- Jodi kono review na thake, tahole ei message dekhabe. -->
+                            {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="far fa-comment-dots fa-2x"></i>
+                                <p class="mt-2">You haven't written any reviews yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing profile: Prothome hidden thakbe. -->
+    <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center"
+        id="edit-profile-modal">
+        <div class="modal-overlay absolute w-full h-full" onclick="toggleModal('edit-profile-modal')"></div>
+        <div class="modal-container w-11/12 md:max-w-4xl mx-auto z-50 overflow-y-auto">
+            <div class="modal-content py-4 text-left px-6">
+                <!-- Modal Title -->
+                <div class="flex justify-between items-center pb-3 border-b info-panel-header">
+                    <p class="text-2xl font-bold text-white">Edit Your Profile</p>
+                    <div class="modal-close cursor-pointer z-50" onclick="toggleModal('edit-profile-modal')">
+                        <i class="fas fa-times text-gray-500 hover:text-white"></i>
+                    </div>
+                </div>
+                <!-- Modal Body and Form: Ekhane profile edit korar form ta ache. -->
+                <form id="profile-edit-form" action="{{ url_for('traveler_profiles.update_profile') }}" method="POST"
+                    enctype="multipart/form-data" class="mt-4 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Bam Dike: Form er input field gulo. -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="first_name" class="block text-sm font-medium text-gray-400">First
+                                    Name</label>
+                                <input type="text" name="first_name" value="{{ profile.first_name }}"
+                                    class="mt-1 block w-full rounded-md form-control">
+                            </div>
+                            <div>
+                                <label for="last_name" class="block text-sm font-medium text-gray-400">Last Name</label>
+                                <input type="text" name="last_name" value="{{ profile.last_name }}"
+                                    class="mt-1 block w-full rounded-md form-control">
+                            </div>
+                            <div>
+                                <label for="bio" class="block text-sm font-medium text-gray-400">Your Bio</label>
+                                <textarea name="bio" rows="4"
+                                    class="mt-1 block w-full rounded-md form-control">{{ profile.bio or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label for="max_budget" class="block text-sm font-medium text-gray-400">Max Budget
+                                    (BDT/night)</label>
+                                <input type="number" name="max_budget" value="{{ profile.max_budget or 1000 }}"
+                                    class="mt-1 block w-full rounded-md form-control">
+                            </div>
+                            <div>
+                                <label for="min_wifi_speed" class="block text-sm font-medium text-gray-400">Min WiFi
+                                    Speed (Mbps)</label>
+                                <input type="number" name="min_wifi_speed" value="{{ profile.min_wifi_speed or 25 }}"
+                                    class="mt-1 block w-full rounded-md form-control">
+                            </div>
+                        </div>
+                        <!-- Dan Dike: Profile picture upload ebong crop korar section. -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400">Profile Picture</label>
+                            <label
+                                class="file-input-label mt-1 inline-block py-2 px-4 bg-gray-600 text-gray-200 rounded-md hover:bg-gray-500 transition">
+                                <span>Choose File</span>
+                                <input type="file" id="profile_picture_input" name="profile_picture_source"
+                                    class="hidden" accept="image/*">
+                            </label>
+                            <div class="img-container hidden bg-gray-800 p-2 rounded-md">
+                                <img id="image-to-crop" src="">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Text area for current travel plans -->
+                    <div class="pt-4 border-t info-panel-header">
+                        <div>
+                            <label for="looking_for" class="block text-sm font-medium text-gray-400">Current Travel
+                                Plans</label>
+                            <textarea name="looking_for" rows="3" class="mt-1 block w-full rounded-md form-control"
+                                placeholder="e.g., A quiet space in Dhaka for 3 months...">{{ profile.looking_for or '' }}</textarea>
+                        </div>
+                    </div>
+                    <!-- Form er footer e cancel ebong save button. -->
+                    <div class="flex justify-end pt-4 border-t info-panel-header mt-4">
+                        <button type="button" onclick="toggleModal('edit-profile-modal')"
+                            class="px-4 bg-transparent p-3 rounded-lg text-gray-400 hover:bg-gray-700 mr-2 transition">Cancel</button>
+                        <button type="submit" class="px-4 btn-primary p-3 rounded-lg transition">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript section -->
+    <script>
+        // Modal, form, ebong image cropper er jonno joto element dorkar, shegulo select kora hocche.
+        const editModal = document.getElementById('edit-profile-modal');
+        const imageToCrop = document.getElementById('image-to-crop');
+        const profilePictureInput = document.getElementById('profile_picture_input');
+        const imgContainer = document.querySelector('.img-container');
+        const editForm = document.getElementById('profile-edit-form');
+        let cropper;
+
+        // --- Tab Switching Logic ---
+        function openTab(evt, tabName) {
+            // Shob tab content hide kora hocche.
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Shob tab button theke "active" class shoriye deya hocche.
+            const tablinks = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Click kora tab ta dekhano hocche ebong button take active kora hocche.
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Modal open/close korar function.
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('opacity-0');
+            modal.classList.toggle('pointer-events-none');
+            document.body.classList.toggle('modal-active');
+            if (modalId === 'edit-profile-modal' && cropper) {
+                cropper.destroy();
+                imgContainer.classList.add('hidden');
+            }
+        }
+
+        // Cropper.js initialize korar logic jokhon user notun chobi select kore.
+        profilePictureInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imageToCrop.src = event.target.result;
+                imgContainer.classList.remove('hidden');
+
+                if (cropper) cropper.destroy();
+
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1, // Chobi ta square shape e crop hobe.
+                    viewMode: 1,
+                    background: false,
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Form submit korar logic. Eita normal form submission na kore AJAX diye korbe.
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Default form submission bondho kora hocche.
+            const formData = new FormData(editForm);
+
+            // Jodi user notun chobi crop kore thake.
+            if (cropper && profilePictureInput.files.length > 0) {
+                // Crop kora chobi ta ke ekta blob hishebe neya hocche.
+                cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400,
+                }).toBlob((blob) => {
+                    // Blob ta ke formData te add kora hocche.
+                    formData.append('profile_picture', blob, profilePictureInput.files[0].name);
+                    // Erpor formData ta server e pathano hocche.
+                    submitFormData(formData);
+                }, 'image/jpeg');
+            } else {
+                // Jodi notun chobi na thake, shudhu baki data pathano hocche.
+                submitFormData(formData);
+            }
+        });
+
+        // AJAX diye data pathanor function.
+        function submitFormData(formData) {
+            fetch(editForm.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json' // Server ke bola hocche je amra JSON response expect korchi.
+                },
+                body: formData,
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Network response was not ok.');
+                })
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload(); // Success hoile page ta reload hobe jate notun data dekha jay.
+                    } else {
+                        console.error('Update failed:', data.message || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Flash message gulo 5 second por auto-hide korar script.
+        document.addEventListener('DOMContentLoaded', function () {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function (message) {
+                setTimeout(() => {
+                    message.style.transition = 'opacity 0.5s ease';
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500); // fade out shesh howar por element ta remove hobe.
+                }, 5000); // 5 second por fade out shuru hobe.
+            });
+        });
+    </script>
+</body>
+
+</html>

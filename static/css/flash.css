@@ -1,0 +1,39 @@
+/* Flash Message Styles */
+/* Notifications and alerts */
+.flash-messages {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+}
+
+.flash-message {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: var(--radius);
+    background-color: var(--card-bg);
+    border-left: 4px solid var(--primary-color);
+    /* Default fallback */
+    box-shadow: var(--shadow);
+    animation: slideIn 0.3s ease-out;
+}
+
+.flash-success {
+    border-left-color: var(--success-color);
+}
+
+.flash-error {
+    border-left-color: var(--error-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
