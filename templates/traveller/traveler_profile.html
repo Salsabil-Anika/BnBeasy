@@ -214,6 +214,9 @@
                     <button class="tab-button w-full text-center" onclick="openTab(event, 'reviews')">
                         <i class="fas fa-star mr-2"></i>My Reviews
                     </button>
+                    <button class="tab-button w-full text-center" onclick="openTab(event, 'bookings')">
+                        <i class="fas fa-calendar-check mr-2"></i>My Bookings
+                    </button>
                 </div>
 
                 <!-- Tab Content: My Information -->
@@ -317,6 +320,53 @@
                             <div class="text-center py-8 text-gray-500">
                                 <i class="far fa-comment-dots fa-2x"></i>
                                 <p class="mt-2">You haven't written any reviews yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: My Bookings -->
+                <div id="bookings" class="tab-content">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 border-gray-700">My Bookings</h3>
+                        <div class="mt-4">
+                            {% if bookings and bookings|length > 0 %}
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Space</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Check-in</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Check-out</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Guests</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Price/night</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Status</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        {% for b in bookings %}
+                                        <tr>
+                                            <td class="px-4 py-2">{{ b.space_title or 'Unknown' }}</td>
+                                            <td class="px-4 py-2">{{ b.check_in_date or b.check_in or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.check_out_date or b.check_out or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.guests or 1 }}</td>
+                                            <td class="px-4 py-2">{{ b.price_per_night or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.status or 'Confirmed' }}</td>
+                                            <td class="px-4 py-2">
+                                                <form method="post" action="{{ url_for('traveler_profiles.cancel_booking_route', booking_id=b._id if b._id else b['_id']) }}" style="display:inline">
+                                                    <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded" onclick="return confirm('Cancel this booking?')">Cancel</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <p>You have no bookings yet.</p>
                             </div>
                             {% endif %}
                         </div>

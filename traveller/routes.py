@@ -1,37 +1,48 @@
-from flask import render_template, session, redirect, url_for, request
+from flask import render_template, request
 from . import traveller_bp
-from config import listings_collection, users_collection
-from bson.objectid import ObjectId
+import os
 
-@traveller_bp.route("/home")
+
+@traveller_bp.route('/home')
 def home():
-    if "user_id" not in session or session.get("role") != "traveller":
-        return redirect(url_for("auth.login"))
-    
-    query = {}
-    
-    city = request.args.get("city")
-    if city:
-        query["city"] = {"$regex": city, "$options": "i"}
-        
-    price = request.args.get("price")
-    if price:
-        try:
-            query["price"] = {"$lte": int(price)}
-        except ValueError:
-            pass
-            
-    amenities = request.args.getlist("amenities")
-    if amenities:
-        query["amenities"] = {"$all": amenities}
-    
-    listings = list(listings_collection.find(query))
-    return render_template("traveller/home.html", listings=listings)
+    """Render traveller home using `models.space` data so detail links match space IDs."""
+    listings = []
+    try:
+        from models.space import filter_spaces
 
-@traveller_bp.route("/profile")
-def profile():
-    if "user_id" not in session or session.get("role") != "traveller":
-        return redirect(url_for("auth.login"))
-    
-    user = users_collection.find_one({"_id": ObjectId(session["user_id"])})
-    return render_template("traveller/profile.html", user=user)
+        filters = {}
+        city = request.args.get('city')
+        if city:
+            filters['location'] = city
+        price = request.args.get('price')
+        if price:
+            filters['max_price'] = price
+        filters['amenities'] = request.args.getlist('amenities')
+
+        spaces = filter_spaces(filters)
+
+        # Normalize spaces into the `listing` shape expected by the template
+        for s in spaces:
+            photo = None
+            photos = s.get('photos') or []
+            if photos:
+                first = photos[0]
+                # if stored as uploads/<name> or absolute path, keep basename
+                if isinstance(first, str) and ('/' in first):
+                    photo = os.path.basename(first)
+                else:
+                    photo = first
+
+            listings.append({
+                '_id': str(s.get('_id')),
+                'title': s.get('space_title'),
+                'image': photo,
+                'price': s.get('price_per_night'),
+                'city': s.get('location_city'),
+                'location': s.get('location_city'),
+                'amenities': s.get('amenities', [])
+            })
+    except Exception:
+        listings = []
+
+    return render_template('traveller/home.html', listings=listings)

@@ -29,6 +29,19 @@
                     </a>
                 </div>
 
+    <!-- Quick Links: My Bookings -->
+    <div class="card rounded-xl p-6 mt-6">
+        <a href="{{ url_for('traveler_profiles.booking_history') }}">
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <div style="width:48px; height:48px; background:#46e0c1; border-radius:8px;"></div>
+                <div>
+                    <h2 style="font-size:1.25rem; font-weight:700; color:#fff;">My Bookings</h2>
+                    <p style="color:#9ca3af;">View or cancel your reservations</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
     <main>
         {% block content %}{% endblock %}
     </main>

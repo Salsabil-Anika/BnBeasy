@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h1>{{ space.space_title or 'Space Details' }}</h1>
+
+  {% if space.photos %}
+  <div class="space-photos">
+    {% for p in space.photos %}
+      <img src="{{ url_for('static', filename=p) }}" alt="{{ space.space_title }} photo" style="max-width:200px; margin:8px;"/>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <p><strong>Location:</strong> {{ space.location_city or 'Unknown' }}</p>
+  <p><strong>Host:</strong> {{ space.host_name or space.host_id or 'Unknown' }}</p>
+  <p><strong>Price per night:</strong> {{ space.price_per_night or 'N/A' }}</p>
+
+  <h3>Description</h3>
+  <p>{{ space.description or 'No description provided.' }}</p>
+
+  <hr />
+
+  <h3>Book this space</h3>
+  <form method="post" action="{{ url_for('space_bp.book_space', space_id=space._id) }}">
+    <div>
+      <label for="check_in_date">Check-in</label>
+      <input type="date" name="check_in_date" id="check_in_date" required />
+    </div>
+    <div>
+      <label for="check_out_date">Check-out</label>
+      <input type="date" name="check_out_date" id="check_out_date" required />
+    </div>
+    <div>
+      <label for="guests">Guests</label>
+      <input type="number" name="guests" id="guests" min="1" value="1" />
+    </div>
+    <div style="margin-top:8px;">
+      <button type="submit" class="btn">Book Now</button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
