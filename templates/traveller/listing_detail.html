@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ listing.title }} | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 1000px; margin: 0 auto;">
+    
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('traveller.home') }}" class="btn" 
+           style="background: transparent; border: 1px solid var(--border-color); color: var(--text-color);">
+            ← Back to Listings
+        </a>
+    </div>
+
+    <div style="background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); overflow: hidden;">
+        
+        <!-- Image Header -->
+        <div style="height: 400px; background-color: #2d3748; position: relative;">
+            {% if listing.image %}
+            <img 
+                src="{{ url_for('static', filename='uploads/' + listing.image) }}" 
+                alt="{{ listing.title }}" 
+                style="width: 100%; height: 100%; object-fit: cover;"
+            >
+            {% else %}
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 1.5rem;">
+                No Image Available
+            </div>
+            {% endif %}
+            
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; 
+                        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); 
+                        padding: 2rem;">
+                <h1 style="color: white; font-size: 2.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    {{ listing.title }}
+                </h1>
+                <p style="color: rgba(255,255,255,0.9); margin: 0.5rem 0 0; font-size: 1.1rem;">
+                    {{ listing.city }}, {{ listing.location }}
+                </p>
+            </div>
+        </div>
+
+        <div style="padding: 2.5rem;">
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem;">
+                
+                <!-- Main Info -->
+                <div>
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Description</h2>
+                        <p style="color: var(--text-muted); line-height: 1.6; white-space: pre-line;">
+                            {{ listing.description }}
+                        </p>
+                    </div>
+
+                    {% if listing.amenities %}
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Amenities</h2>
+                        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                            {% for amenity in listing.amenities %}
+                            <span style="background: var(--bg-color); padding: 0.5rem 1rem; border-radius: 8px; color: var(--text-color); border: 1px solid var(--border-color);">
+                                {{ amenity }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar / Booking Card -->
+                <div>
+                    <div style="background: var(--bg-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); position: sticky; top: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                            <span style="font-size: 1.1rem; color: var(--text-muted);">Price per night</span>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">
+                                ${{ listing.price }}
+                            </span>
+                        </div>
+
+                        <button class="btn" style="width: 100%; font-size: 1.1rem; padding: 1rem;">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

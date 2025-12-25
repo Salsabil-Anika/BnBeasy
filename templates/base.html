@@ -15,6 +15,7 @@
         <div class="nav-links">
             {% if session.get('user_id') %}
             <a href="{{ url_for('traveler_profiles.view_traveler_profile') }}">Profile</a>
+            <a href="{{ url_for('traveller_community.community_home') }}">Community</a>
             <a href="{{ url_for('auth.logout') }}">Logout</a>
             {% else %}
             <a href="{{ url_for('auth.login') }}">Login</a>

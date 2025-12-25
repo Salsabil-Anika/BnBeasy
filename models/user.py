@@ -1,4 +1,3 @@
-import email
 from flask import redirect, url_for
 from config import users_collection
 from werkzeug.security import generate_password_hash, check_password_hash

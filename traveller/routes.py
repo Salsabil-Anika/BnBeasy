@@ -35,3 +35,18 @@ def profile():
     
     user = users_collection.find_one({"_id": ObjectId(session["user_id"])})
     return render_template("traveller/profile.html", user=user)
+
+@traveller_bp.route("/listing/<listing_id>")
+def view_listing(listing_id):
+    if "user_id" not in session or session.get("role") != "traveller":
+        return redirect(url_for("auth.login"))
+        
+    try:
+        listing = listings_collection.find_one({"_id": ObjectId(listing_id)})
+        if not listing:
+            # You might want to flash a message here
+            return redirect(url_for("traveller.home"))
+            
+        return render_template("traveller/listing_detail.html", listing=listing)
+    except:
+        return redirect(url_for("traveller.home"))

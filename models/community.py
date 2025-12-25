@@ -7,9 +7,9 @@ from datetime import datetime
 
 # --- MongoDB Connect ---
 try:
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/nomadnest")
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/Bnbeasy")
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-    db = client.get_database("nomadnest")
+    db = client.get_database("Bnbeasy")
     community_collection = db.community_threads
     community_collection.create_index([("created_at", DESCENDING)])
     print("Community Model: MongoDB connected successfully.")
