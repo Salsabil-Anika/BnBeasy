@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from models.user import add_user, verify_user
+import random
+from email_details import send_otp_email
+from models.user import add_user, verify_user, set_verified
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -16,10 +18,16 @@ def register():
             message="User already exists"
             return render_template("register.html", status="fail", message=message),400
 
-    
         else:
-            add_user(name, email, password, role)
-            return render_template("register.html", status="success", message="User registered"), 200
+            otp = str(random.randint(100000, 999999))
+            try:
+                send_otp_email(email, otp)
+                add_user(name, email, password, role, otp=otp)
+                session["pending_email"] = email
+                return redirect(url_for("auth.verify_otp"))
+            except Exception as e:
+                message = f"Error sending verification email: {str(e)}"
+                return render_template("register.html", status="fail", message=message), 500
         
     return render_template("register.html", message=message)
 
@@ -49,6 +57,26 @@ def login():
 
 
     
+
+@auth_bp.route("/verify_otp", methods=["GET", "POST"])
+def verify_otp():
+    email = session.get("pending_email")
+    if not email:
+        return redirect(url_for("auth.register"))
+
+    if request.method == "POST":
+        otp_input = request.form.get("otp")
+        from config import users_collection
+        user = users_collection.find_one({"email": email})
+        
+        if user and user.get("otp") == otp_input:
+            set_verified(email)
+            session.pop("pending_email", None)
+            return render_template("login.html", message="Email verified! Please login.")
+        else:
+            return render_template("verify_otp.html", error="Invalid OTP. Please try again.")
+
+    return render_template("verify_otp.html")
 
 @auth_bp.route("/logout")
 def logout():
