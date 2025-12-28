@@ -45,6 +45,7 @@ def add_comment(thread_id, comment, user_id, role):
         "role": role,
         "created_at": datetime.utcnow()
     }
+    # kon thread e comment add korbo sheta identify kore tar comments array te notun comment push korchi
     return community_collection.update_one(
         {"_id": ObjectId(thread_id)},
         {"$push": {"comments": new_comment}}

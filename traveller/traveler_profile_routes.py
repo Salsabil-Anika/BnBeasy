@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 from flask import Blueprint, current_app, request, redirect, url_for, flash, session, render_template, jsonify
 from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
@@ -11,10 +12,11 @@ from models.traveler_profile import (
     get_emergency_contacts,
     update_emergency_contacts
 )
+from models.booking import get_bookings_by_user, get_booking_by_id, cancel_booking
 
 
-# Create Blueprint for traveler profiles
-traveler_profiles_bp = Blueprint('traveler_profiles', __name__, template_folder='../templates', static_folder='../static')
+
+traveler_profiles_bp = Blueprint('traveler_profiles', __name__, url_prefix='/traveller', template_folder='../templates', static_folder='../static')
 
 # File upload settings
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -45,16 +47,118 @@ def view_traveler_profile():
 
 
     emergency_contacts_data = get_emergency_contacts(user_mongo_id)
+    # Fetch user's bookings so they can view/cancel from the profile dashboard
+    try:
+        bookings = get_bookings_by_user(user_mongo_id)
+    except Exception:
+        bookings = []
 
-    # Render template with all data
+    # Reuse a small sanitizer to convert ObjectIds/datetimes into strings for templates
+    def _sanitize_item(o):
+        if isinstance(o, dict):
+            out = {}
+            for k, v in o.items():
+                out[k] = _sanitize_item(v)
+            if '_id' in out:
+                try:
+                    from bson.objectid import ObjectId
+                    if isinstance(out['_id'], ObjectId):
+                        out['_id'] = str(out['_id'])
+                except Exception:
+                    pass
+            return out
+        if isinstance(o, list):
+            return [_sanitize_item(i) for i in o]
+        try:
+            from bson.objectid import ObjectId
+            if isinstance(o, ObjectId):
+                return str(o)
+        except Exception:
+            pass
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return o
+
+    safe_bookings = _sanitize_item(bookings)
+
+    # Render template with all data including bookings
     return render_template(
         'traveller/traveler_profile.html',
         profile=profile_data,
         favorites=None,  # favorites=favorite_spaces,
         reviews=None,  # reviews=my_reviews,
-        contacts=emergency_contacts_data
+        contacts=emergency_contacts_data,
+        bookings=safe_bookings
     )
 
+
+@traveler_profiles_bp.route('/bookings')
+def booking_history():
+    if 'user_id' not in session or session.get('role') != 'traveller':
+        flash('You must be logged in as a traveler to view bookings.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    user_mongo_id = session['user_id']
+    try:
+        bookings = get_bookings_by_user(user_mongo_id)
+    except Exception:
+        bookings = []
+    # Sanitize bookings for template rendering and JSON (convert ObjectId and datetimes)
+    def _sanitize_item(o):
+        if isinstance(o, dict):
+            out = {}
+            for k, v in o.items():
+                out[k] = _sanitize_item(v)
+            # ensure _id is a string for templates
+            if '_id' in out and isinstance(out['_id'], ObjectId):
+                out['_id'] = str(out['_id'])
+            return out
+        if isinstance(o, list):
+            return [_sanitize_item(i) for i in o]
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return o
+
+    safe_bookings = _sanitize_item(bookings)
+    # Try to render a template if present; otherwise return JSON for API/debug
+    try:
+        return render_template('traveller/booking_history.html', bookings=safe_bookings)
+    except Exception:
+        return jsonify({'bookings': safe_bookings})
+
+
+
+@traveler_profiles_bp.route('/bookings/cancel/<booking_id>', methods=['POST'])
+def cancel_booking_route(booking_id):
+    if 'user_id' not in session or session.get('role') != 'traveller':
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    # Verify booking exists and belongs to current user
+    b = get_booking_by_id(booking_id)
+    if not b:
+        flash('Booking not found.', 'danger')
+        return redirect(url_for('traveler_profiles.booking_history'))
+
+    # Compare stored user id (may be ObjectId or string)
+    b_user = b.get('user_id')
+    if isinstance(b_user, ObjectId):
+        b_user = str(b_user)
+
+    if str(b_user) != str(session.get('user_id')):
+        flash('You are not authorized to cancel this booking.', 'danger')
+        return redirect(url_for('traveler_profiles.booking_history'))
+
+    success = cancel_booking(booking_id)
+    if success:
+        flash('Booking cancelled successfully.', 'success')
+    else:
+        flash('Could not cancel booking. Please try again.', 'danger')
+
+    return redirect(url_for('traveler_profiles.booking_history'))
+# Profile update kore
 @traveler_profiles_bp.route("/profile/update", methods=['POST'])
 def update_profile():
     """Handle profile update form submission."""

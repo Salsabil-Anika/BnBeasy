@@ -1,11 +1,20 @@
 from flask import render_template, request, session, redirect, url_for, current_app
 from . import host_bp
 from models.user import users_collection
-from models.listings import add_listing
+
 from config import listings_collection
 from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 import os
+from models.space import (
+    create_space as create_space_in_db, 
+    get_space_by_id, 
+    update_space, 
+    filter_spaces,
+    get_all_spaces,
+    get_popular_spaces_in_location,
+    delete_space
+)
 
 @host_bp.route("/dashboard")
 def dashboard():
@@ -58,6 +67,8 @@ def add_listing_route():
         city = request.form.get("city")
         location = request.form.get("location")
         description = request.form.get("description")
+        longitude = request.form.get("longitude")
+        latitude = request.form.get("latitude")
 
         if 'image' not in request.files:
             return redirect(request.url)
@@ -72,7 +83,36 @@ def add_listing_route():
 
         amenities = request.form.getlist('amenities')
 
-        add_listing(session["user_id"], title, price, city, location, description, image_filename, amenities)
+        # assemble space document compatible with models.space.create_space
+        space_data = {
+            'host_id': session.get('user_id'),
+            'space_title': title,
+            'description': description,
+            'price_per_night': float(price) if price else 0,
+            'location_city': city,
+            'location': location,
+            'photos': [f"uploads/{image_filename}"] if image_filename else [],
+            'amenities': amenities,
+            'latitude': float(latitude) if latitude else None,
+            'longitude': float(longitude) if longitude else None,
+            'space_type': request.form.get('space_type', 'Private Room'),
+            'has_coworking_space': 'has_coworking_space' in request.form
+        }
+
+        try:
+            create_space_in_db(space_data)
+        except Exception:
+            # fallback: insert directly into listings_collection if models call fails
+            listings_collection.insert_one({
+                'host_id': session.get('user_id'),
+                'title': title,
+                'price': float(price) if price else 0,
+                'city': city,
+                'location': location,
+                'description': description,
+                'image': image_filename,
+                'amenities': amenities,
+            })
 
         return redirect(url_for("host.dashboard"))
 
