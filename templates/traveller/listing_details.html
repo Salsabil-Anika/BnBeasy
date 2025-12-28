@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ listing.title }} | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+
+        <!-- Listing Details -->
+        <div style="flex: 2; min-width: 300px;">
+            <div
+                style="background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-color);">
+                <div style="height: 400px; background-color: #2d3748;">
+                    {% if listing.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + listing.image) }}" alt="{{ listing.title }}"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <div
+                        style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">
+                        No Image</div>
+                    {% endif %}
+                </div>
+
+                <div style="padding: 2rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h1 style="font-size: 2rem; font-weight: 700;">{{ listing.title }}</h1>
+                        <span style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">${{
+                            listing.price }} / night</span>
+                    </div>
+
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ listing.city }}, {{ listing.location }}
+                    </p>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Description</h3>
+                        <p style="line-height: 1.6;">{{ listing.description or "No description provided." }}</p>
+                    </div>
+
+                    {% if listing.amenities %}
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Amenities</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            {% for amenity in listing.amenities %}
+                            <span
+                                style="background: var(--bg-color); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;">
+                                {{ amenity }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div style="flex: 1; min-width: 300px;">
+            <div
+                style="background: var(--card-bg); border-radius: var(--radius); padding: 2rem; border: 1px solid var(--border-color); position: sticky; top: 2rem;">
+                <h2 style="margin-bottom: 1.5rem;">Book this place</h2>
+
+                <form action="{{ url_for('traveller.book_listing', listing_id=listing._id|string) }}" method="POST">
+                    <div class="form-group">
+                        <label>Email address</label>
+                        <input type="email" name="email" class="form-input" placeholder="your@email.com" required
+                            value="{{ session.get('user') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Check-in Date</label>
+                        <input type="date" name="check_in" class="form-input" required min="{{ now }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Check-out Date</label>
+                        <input type="date" name="check_out" class="form-input" required min="{{ now }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Note (Optional)</label>
+                        <textarea name="note" class="form-input" style="height: 100px; padding-top: 0.75rem;"
+                            placeholder="Anything we should know?"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn"
+                        style="width: 100%; margin-top: 1rem; height: 50px; font-size: 1.1rem;">
+                        Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

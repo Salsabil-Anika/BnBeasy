@@ -14,6 +14,11 @@
         <a href="/" class="brand">BnBeasy</a>
         <div class="nav-links">
             {% if session.get('user_id') %}
+            {% if session.get('role') == 'traveller' %}
+            <a href="{{ url_for('traveller.my_bookings') }}">Bookings</a>
+            {% elif session.get('role') == 'host' %}
+            <a href="{{ url_for('host.view_received_bookings') }}">Received Bookings</a>
+            {% endif %}
             <a href="{{ url_for('traveler_profiles.view_traveler_profile') }}">Profile</a>
             <a href="{{ url_for('auth.logout') }}">Logout</a>
             {% else %}

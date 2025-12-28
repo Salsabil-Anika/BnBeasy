@@ -71,10 +71,21 @@ def add_listing_route():
             image_filename = filename
 
         amenities = request.form.getlist('amenities')
+        latitude = request.form.get("latitude")
+        longitude = request.form.get("longitude")
 
-        add_listing(session["user_id"], title, price, city, location, description, image_filename, amenities)
+        add_listing(session["user_id"], title, price, city, location, description, image_filename, amenities, latitude, longitude)
 
         return redirect(url_for("host.dashboard"))
 
     return render_template("host/add_listing.html")
+
+@host_bp.route("/bookings")
+def view_received_bookings():
+    if "user_id" not in session or session.get("role") != "host":
+        return redirect(url_for("auth.login"))
+    
+    from config import bookings_collection
+    bookings = list(bookings_collection.find({"host_id": session["user_id"]}).sort("created_at", -1))
+    return render_template("host/bookings.html", bookings=bookings)
 

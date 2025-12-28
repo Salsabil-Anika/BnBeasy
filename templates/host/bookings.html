@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Received Bookings | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 style="margin-bottom: 2rem;">Received Bookings</h1>
+
+    {% if bookings %}
+    <div
+        style="background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: var(--bg-color); border-bottom: 1px solid var(--border-color);">
+                    <th style="padding: 1rem; text-align: left;">Listing</th>
+                    <th style="padding: 1rem; text-align: left;">Traveller Email</th>
+                    <th style="padding: 1rem; text-align: left;">Dates</th>
+                    <th style="padding: 1rem; text-align: left;">Total Price</th>
+                    <th style="padding: 1rem; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem; font-weight: 600;">{{ booking.listing_title }}</td>
+                    <td style="padding: 1rem;">{{ booking.email }}</td>
+                    <td style="padding: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                        {{ booking.check_in }} to {{ booking.check_out }}
+                    </td>
+                    <td style="padding: 1rem; font-weight: 700;">${{ booking.total_price }}</td>
+                    <td style="padding: 1rem;">
+                        <span
+                            style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                            {{ booking.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div
+        style="text-align: center; padding: 4rem; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color);">
+        <p style="color: var(--text-muted);">No bookings received yet for your listings.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

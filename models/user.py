@@ -15,6 +15,9 @@ def verify_user(email, password):  # find user and match password
         return user
     return None
 
+def get_user_by_email(email):
+    return users_collection.find_one({"email": email})
+
 
 
 
