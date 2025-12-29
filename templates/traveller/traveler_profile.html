@@ -302,17 +302,31 @@
                             <!-- `reviews` list er upor loop chaliye user er deya shob review dekhano hocche. -->
                             {% if reviews %}
                             {% for review in reviews %}
-                            <div class="bg-gray-800 p-4 rounded-lg">
-                                <h4 class="font-semibold text-white">Review for: {{ review.space_details.space_title if
-                                    review.space_details else 'Unknown Space' }}</h4>
-                                <div class="flex items-center mt-1">
-                                    <div class="star-color">
-                                        {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                            <div class="bg-gray-800 p-4 rounded-lg flex justify-between items-start">
+                                <div class="flex-grow">
+                                    <h4 class="font-semibold text-white">Review for: {{ review.space_name or 'Unknown
+                                        Space' }}</h4>
+                                    <div class="flex items-center mt-1">
+                                        <div class="star-color">
+                                            {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                                            {% for i in range(5 - review.rating) %}<i class="far fa-star"></i>{% endfor
+                                            %}
+                                        </div>
                                     </div>
+                                    <p class="text-gray-400 mt-2">"{{ review.comment }}"</p>
+                                    <p class="text-xs text-gray-500 mt-2">Posted on: {{ review.created_at.split('T')[0]
+                                        if 'T' in review.created_at else review.created_at }}</p>
                                 </div>
-                                <p class="text-gray-400 mt-2">"{{ review.comment }}"</p>
-                                {% if review.photo_url %}<img src="{{ review.photo_url }}" alt="Review photo"
-                                    class="mt-2 rounded-lg max-w-xs">{% endif %}
+                                <div class="ml-4">
+                                    <form method="POST"
+                                        action="{{ url_for('traveller.delete_review_route', review_id=review._id) }}"
+                                        onsubmit="return confirm('Are you sure you want to delete this review?')">
+                                        <button type="submit" class="text-red-500 hover:text-red-400 transition"
+                                            title="Delete Review">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                             {% endfor %}
                             <!-- Jodi kono review na thake, tahole ei message dekhabe. -->
@@ -355,8 +369,12 @@
                                             <td class="px-4 py-2">{{ b.price_per_night or 'N/A' }}</td>
                                             <td class="px-4 py-2">{{ b.status or 'Confirmed' }}</td>
                                             <td class="px-4 py-2">
-                                                <form method="post" action="{{ url_for('traveler_profiles.cancel_booking_route', booking_id=b._id if b._id else b['_id']) }}" style="display:inline">
-                                                    <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded" onclick="return confirm('Cancel this booking?')">Cancel</button>
+                                                <form method="post"
+                                                    action="{{ url_for('traveller.cancel_booking_route', booking_id=b._id if b._id else b['_id']) }}"
+                                                    style="display:inline">
+                                                    <button type="submit"
+                                                        class="px-3 py-1 bg-red-600 text-white rounded"
+                                                        onclick="return confirm('Cancel this booking?')">Cancel</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -391,7 +409,7 @@
                     </div>
                 </div>
                 <!-- Modal Body and Form: Ekhane profile edit korar form ta ache. -->
-                <form id="profile-edit-form" action="{{ url_for('traveler_profiles.update_profile') }}" method="POST"
+                <form id="profile-edit-form" action="{{ url_for('traveller.update_profile') }}" method="POST"
                     enctype="multipart/form-data" class="mt-4 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Bam Dike: Form er input field gulo. -->

@@ -113,13 +113,10 @@
                 {% endif %}
 
                 <div style="display:flex; gap:0.5rem; flex-direction:column;">
-                    <a href="{{ url_for('space_bp.space_detail', space_id=listing._id) }}" class="btn" style="width:100%; text-align:center;">
+                    <a href="{{ url_for('space_bp.space_detail', space_id=listing._id) }}" class="btn"
+                        style="width:100%; text-align:center;">
                         View Details
                     </a>
-
-                    <form action="{{ url_for('space_bp.book_space', space_id=listing._id) }}" method="post" style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;">
-                        <button type="submit" class="btn" style="padding:8px 12px;">Book</button>
-                    </form>
                 </div>
             </div>
         </div>

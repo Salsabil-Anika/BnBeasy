@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Property | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="padding-top: 2rem;">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h2>Edit Property</h2>
+            <p>Update your listing details</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Title</label>
+                <input name="title" class="form-input" placeholder="Property Title" value="{{ space.space_title }}"
+                    required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">City</label>
+                    <input name="city" class="form-input" placeholder="City" value="{{ space.location_city }}" required>
+                </div>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Location</label>
+                    <input name="location" class="form-input" placeholder="Specific Location"
+                        value="{{ space.location }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Price per night
+                    ($)</label>
+                <input type="number" name="price" class="form-input" placeholder="Price"
+                    value="{{ space.price_per_night }}" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Description</label>
+                <textarea name="description" class="form-input" placeholder="Describe your property..." rows="4"
+                    style="resize: vertical;">{{ space.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Longitude</label>
+                <input name="longitude" class="form-input" placeholder="Longitude" value="{{ space.longitude }}">
+            </div>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Latitude</label>
+                <input name="latitude" class="form-input" placeholder="Latitude" value="{{ space.latitude }}">
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">New Cover Image
+                    (Optional)</label>
+                {% if space.photos and space.photos|length > 0 %}
+                <div style="margin-bottom: 0.5rem;">
+                    <img src="{{ url_for('static', filename=space.photos[0]) }}"
+                        style="height: 100px; border-radius: 8px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Current Image</p>
+                </div>
+                {% endif %}
+                <input type="file" name="image" class="form-input" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Amenities</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    {% set amenities = space.amenities or [] %}
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Wifi" {% if 'Wifi' in amenities %}checked{% endif
+                            %}> Wifi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Kitchen" {% if 'Kitchen' in amenities %}checked{%
+                            endif %}> Kitchen
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Parking" {% if 'Parking' in amenities %}checked{%
+                            endif %}> Free Parking
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Pool" {% if 'Pool' in amenities %}checked{% endif
+                            %}> Pool
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn">Update Listing</button>
+            <a href="{{ url_for('host.dashboard') }}"
+                style="display: block; text-align: center; margin-top: 1rem; color: var(--text-muted); text-decoration: none;">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -12,7 +12,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static/up
 
 from host import host_bp
 from traveller import traveller_bp
-from traveller.traveler_profile_routes import traveler_profiles_bp
+
 from traveller.space import space_bp
 
 # community blueprints (host and traveller)
@@ -22,7 +22,7 @@ from traveller.community import community_bp as traveller_community_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(host_bp)
 app.register_blueprint(traveller_bp)
-app.register_blueprint(traveler_profiles_bp)
+
 
 # register community blueprints
 app.register_blueprint(host_community_bp)

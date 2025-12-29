@@ -7,7 +7,8 @@
   {% if space.photos %}
   <div class="space-photos">
     {% for p in space.photos %}
-      <img src="{{ url_for('static', filename=p) }}" alt="{{ space.space_title }} photo" style="max-width:200px; margin:8px;"/>
+    <img src="{{ url_for('static', filename=p) }}" alt="{{ space.space_title }} photo"
+      style="max-width:200px; margin:8px;" />
     {% endfor %}
   </div>
   {% endif %}
@@ -18,6 +19,83 @@
 
   <h3>Description</h3>
   <p>{{ space.description or 'No description provided.' }}</p>
+
+  <!-- Map Section -->
+  <div style="margin-top: 2rem; margin-bottom: 2rem;">
+    <h3>Location & Directions</h3>
+    <div id="map" style="height: 400px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+  </div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Leaflet Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var spaceLat = {{ space.latitude if space.latitude else 0 }
+    };
+    var spaceLng = {{ space.longitude if space.longitude else 0 }};
+
+    // Default to a world view if no coordinates
+    if (!spaceLat || !spaceLng) {
+      console.log("No coordinates available for this space.");
+      document.getElementById('map').innerHTML = "<p>Map location not available.</p>";
+      return;
+    }
+
+    var map = L.map('map').setView([spaceLat, spaceLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Marker for the space
+    L.marker([spaceLat, spaceLng]).addTo(map)
+      .bindPopup('<b>{{ space.space_title }}</b><br>{{ space.location_city }}')
+      .openPopup();
+
+    // Get User Location and Route
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        var userLat = position.coords.latitude;
+        var userLng = position.coords.longitude;
+
+        L.Routing.control({
+          waypoints: [
+            L.latLng(userLat, userLng),
+            L.latLng(spaceLat, spaceLng)
+          ],
+          router: L.Routing.osrmv1({
+            serviceUrl: 'https://router.project-osrm.org/route/v1'
+          }),
+          lineOptions: {
+            styles: [{ color: 'blue', opacity: 0.6, weight: 4 }]
+          },
+          draggableWaypoints: false,
+          addWaypoints: false
+        }).addTo(map);
+
+        // Fit bounds to show both
+        var bounds = L.latLngBounds([
+          [userLat, userLng],
+          [spaceLat, spaceLng]
+        ]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+      }, function (error) {
+        console.error("Error getting location: ", error);
+        // Use a flash or alert if needed, or just let the map stay on space location
+      });
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
+    });
+  </script>
 
   <hr />
 

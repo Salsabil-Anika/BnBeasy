@@ -17,8 +17,8 @@ from models.space import (
     get_popular_spaces_in_location,
     delete_space
 )
-#from models.review import get_average_rating_for_space
-from config import db
+from models.review import create_review, get_reviews_by_space
+from config import db, users_collection
 
 # Initialize the Blueprint
 space_bp = Blueprint('space_bp', __name__)
@@ -127,7 +127,47 @@ def space_detail(space_id):
     # Ensure ObjectId is converted to string for template compatibility
     space['_id'] = str(space['_id'])
     
-    return render_template('space_detail.html', space=space)
+    # Fetch reviews
+    reviews = get_reviews_by_space(space_id)
+    space['reviews'] = reviews
+    
+    # Fetch Host Name
+    if 'host_id' in space:
+        try:
+            host_user = users_collection.find_one({"_id": ObjectId(space['host_id'])})
+            if host_user:
+                # Combine first and last name, or just use first name
+                space['host_name'] = f"{host_user.get('first_name', '')} {host_user.get('last_name', '')}".strip() or "Unknown Host"
+        except Exception:
+            space['host_name'] = "Unknown Host"
+    
+    return render_template('space_detail_v2.html', space=space)
+
+@space_bp.route('/space/<space_id>/review', methods=['POST'])
+def add_review(space_id):
+    if 'user_id' not in session:
+        flash("Please log in to leave a review.", "warning")
+        return redirect(url_for('auth.login'))
+        
+    rating = request.form.get('rating')
+    comment = request.form.get('comment')
+    
+    if not rating:
+        flash("Please provide a rating.", "danger")
+        return redirect(url_for('space_bp.space_detail', space_id=space_id))
+        
+    review_data = {
+        "space_id": space_id,
+        "user_id": session['user_id'],
+        "user_name": session.get('first_name', 'Traveller'),
+        "rating": int(rating),
+        "comment": comment,
+        "created_at": datetime.utcnow()
+    }
+    
+    create_review(review_data)
+    flash("Review submitted!", "success")
+    return redirect(url_for('space_bp.space_detail', space_id=space_id))
 
 
 @space_bp.route('/spaces/create', methods=['GET', 'POST'])
@@ -227,7 +267,7 @@ def book_space(space_id):
         session['suggested_spaces'] = _sanitize_for_session(suggestions)
         session['new_suggestions'] = True
 
-        return redirect(url_for('traveler_profiles.booking_history'))
+        return redirect(url_for('traveller.my_bookings'))
     except Exception as e:
         flash(f"An error occurred: {e}", "danger")
         return redirect(url_for('space_bp.space_detail', space_id=space_id))
