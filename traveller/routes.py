@@ -29,6 +29,8 @@ def home():
     listings = list(listings_collection.find(query))
     return render_template("traveller/home.html", listings=listings)
 
+from datetime import datetime, timedelta
+
 @traveller_bp.route("/listing/<listing_id>")
 def view_listing(listing_id):
     if "user_id" not in session or session.get("role") != "traveller":
@@ -37,8 +39,31 @@ def view_listing(listing_id):
     listing = listings_collection.find_one({"_id": ObjectId(listing_id)})
     if not listing:
         return "Listing not found", 404
+
+    # Calculate availability for the next 7 days
+    today = datetime.now().date()
+    availability = []
+    
+    for i in range(7):
+        date = today + timedelta(days=i)
+        date_str = date.strftime("%Y-%m-%d")
         
-    return render_template("traveller/listing_details.html", listing=listing)
+        # Check if booked
+        is_booked = bookings_collection.find_one({
+            "listing_id": ObjectId(listing_id),
+            "status": "confirmed",
+            "$or": [
+                {"check_in": {"$lte": date_str}, "check_out": {"$gt": date_str}}
+            ]
+        })
+        
+        availability.append({
+            "date": date.strftime("%a, %b %d"),
+            "status": "Booked" if is_booked else "Available",
+            "is_available": not is_booked
+        })
+        
+    return render_template("traveller/listing_details.html", listing=listing, availability=availability, now=today.strftime("%Y-%m-%d"))
 
 @traveller_bp.route("/book/<listing_id>", methods=["POST"])
 def book_listing(listing_id):
@@ -53,6 +78,23 @@ def book_listing(listing_id):
     check_in = request.form.get("check_in")
     check_out = request.form.get("check_out")
     note = request.form.get("note")
+    
+    # Check for overlapping bookings
+    existing_booking = bookings_collection.find_one({
+        "listing_id": ObjectId(listing_id),
+        "status": "confirmed",
+        "$or": [
+            # New booking starts during existing booking
+            {"check_in": {"$lte": check_in}, "check_out": {"$gt": check_in}},
+            # New booking ends during existing booking
+            {"check_in": {"$lt": check_out}, "check_out": {"$gte": check_out}},
+            # New booking encompasses existing booking
+            {"check_in": {"$gte": check_in}, "check_out": {"$lte": check_out}}
+        ]
+    })
+    
+    if existing_booking:
+        return "These dates are already booked. Please choose different dates.", 400
     
     # Simple total price calculation (assuming daily price)
     from datetime import datetime
