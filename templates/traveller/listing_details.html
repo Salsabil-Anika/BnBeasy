@@ -24,12 +24,13 @@
                 <div style="padding: 2rem;">
                     <div
                         style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                        <h1 style="font-size: 2rem; font-weight: 700;">{{ listing.title }}</h1>
+                        <h1 style="font-size: 2rem; font-weight: 700;">{{ listing.space_title or listing.title }}</h1>
                         <span style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">${{
-                            listing.price }} / night</span>
+                            listing.price_per_night or listing.price }} / night</span>
                     </div>
 
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ listing.city }}, {{ listing.location }}
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ listing.location_city or listing.city
+                        or 'Unknown City' }}
                     </p>
 
                     <div style="margin-bottom: 2rem;">
@@ -50,6 +51,58 @@
                         </div>
                     </div>
                     {% endif %}
+
+                    <!-- Map Section -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Location</h3>
+                        <div id="map" data-lat="{{ listing.latitude if listing.latitude else 0 }}"
+                            data-lng="{{ listing.longitude if listing.longitude else 0 }}"
+                            data-title="{{ listing.space_title or listing.title or 'Listing' }}"
+                            data-city="{{ listing.location_city or listing.city or '' }}"
+                            style="height: 400px; width: 100%; border-radius: 8px; z-index: 1; border: 1px solid var(--border-color);">
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div style="margin-bottom: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="margin-bottom: 0;">Reviews</h3>
+                            <a href="{{ url_for('reviews.submit_review', space_id=listing._id) }}" class="btn"
+                                style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                Write a Review
+                            </a>
+                        </div>
+
+                        {% if reviews %}
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            {% for review in reviews %}
+                            <div style="background: var(--bg-color); padding: 1.5rem; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 600;">{{ review.user_name or 'Traveller' }}</span>
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">
+                                        {{ review.created_at.strftime('%Y-%m-%d') if review.created_at else '' }}
+                                    </span>
+                                </div>
+                                <div style="color: #f59e0b; margin-bottom: 0.5rem;">
+                                    {% for i in range(review.rating) %}
+                                    <i class="fas fa-star"></i>
+                                    {% endfor %}
+                                </div>
+                                <p style="color: var(--text-color); line-height: 1.5;">{{ review.comment }}</p>
+                                {% if review.photo %}
+                                <div style="margin-top: 1rem;">
+                                    <img src="{{ url_for('static', filename='uploads/' + review.photo) }}"
+                                        alt="Review Photo" style="max-width: 150px; border-radius: 6px;">
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-muted);">No reviews yet. Be the first to share your experience!</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,4 +164,34 @@
 
     </div>
 </div>
+
+<!-- Map Leaflet Imports -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var mapElement = document.getElementById('map');
+        var spaceLat = parseFloat(mapElement.getAttribute('data-lat')) || 0;
+        var spaceLng = parseFloat(mapElement.getAttribute('data-lng')) || 0;
+        var spaceTitle = mapElement.getAttribute('data-title') || 'Listing';
+
+        if (spaceLat === 0 && spaceLng === 0) {
+            mapElement.innerHTML = '<div style="height:100%; display:flex; align-items:center; justify-content:center; background: var(--bg-color); color: var(--text-muted);">Location coordinates not available</div>';
+            return;
+        }
+
+        var map = L.map('map').setView([spaceLat, spaceLng], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([spaceLat, spaceLng]).addTo(map)
+            .bindPopup(spaceTitle)
+            .openPopup();
+    });
+</script>
 {% endblock %}

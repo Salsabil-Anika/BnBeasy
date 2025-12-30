@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Reviews for {{ listing.title }} | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('host.dashboard') }}"
+            style="color: var(--primary-color); text-decoration: none; font-weight: 500;">← Back to Dashboard</a>
+    </div>
+
+    <h1 style="margin-bottom: 0.5rem; font-size: 2rem;">Reviews for {{ listing.title }}</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Total Reviews: {{ reviews|length }}</p>
+
+    {% if reviews %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for review in reviews %}
+        <div
+            style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.1rem;">{{ review.user_name }}</h3>
+                    <div style="color: #fbbf24; margin-top: 0.25rem;">
+                        {% for i in range(review.rating) %}★{% endfor %}
+                        {% for i in range(5 - review.rating) %}☆{% endfor %}
+                    </div>
+                </div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">
+                    {{ review.created_at.strftime('%b %d, %Y') if review.created_at else '' }}
+                </span>
+            </div>
+
+            <p style="color: var(--text-color); line-height: 1.6; margin-bottom: 1rem;">
+                {{ review.comment }}
+            </p>
+
+            {% if review.photo %}
+            <div style="margin-top: 1rem;">
+                <img src="{{ url_for('static', filename='uploads/' + review.photo) }}"
+                    style="max-width: 100%; max-height: 300px; border-radius: 8px; object-fit: cover;"
+                    alt="Review photo">
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div
+        style="text-align: center; padding: 4rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;">
+        <p style="color: var(--text-muted); font-size: 1.1rem;">No reviews yet for this listing.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

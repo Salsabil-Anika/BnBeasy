@@ -214,6 +214,9 @@
                     <button class="tab-button w-full text-center" onclick="openTab(event, 'reviews')">
                         <i class="fas fa-star mr-2"></i>My Reviews
                     </button>
+                    <button class="tab-button w-full text-center" onclick="openTab(event, 'bookings')">
+                        <i class="fas fa-calendar-check mr-2"></i>My Bookings
+                    </button>
                 </div>
 
                 <!-- Tab Content: My Information -->
@@ -299,17 +302,31 @@
                             <!-- `reviews` list er upor loop chaliye user er deya shob review dekhano hocche. -->
                             {% if reviews %}
                             {% for review in reviews %}
-                            <div class="bg-gray-800 p-4 rounded-lg">
-                                <h4 class="font-semibold text-white">Review for: {{ review.space_details.space_title if
-                                    review.space_details else 'Unknown Space' }}</h4>
-                                <div class="flex items-center mt-1">
-                                    <div class="star-color">
-                                        {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                            <div class="bg-gray-800 p-4 rounded-lg flex justify-between items-start">
+                                <div class="flex-grow">
+                                    <h4 class="font-semibold text-white">Review for: {{ review.space_name or 'Unknown
+                                        Space' }}</h4>
+                                    <div class="flex items-center mt-1">
+                                        <div class="star-color">
+                                            {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                                            {% for i in range(5 - review.rating) %}<i class="far fa-star"></i>{% endfor
+                                            %}
+                                        </div>
                                     </div>
+                                    <p class="text-gray-400 mt-2">"{{ review.comment }}"</p>
+                                    <p class="text-xs text-gray-500 mt-2">Posted on: {{ review.created_at.split('T')[0]
+                                        if 'T' in review.created_at else review.created_at }}</p>
                                 </div>
-                                <p class="text-gray-400 mt-2">"{{ review.comment }}"</p>
-                                {% if review.photo_url %}<img src="{{ review.photo_url }}" alt="Review photo"
-                                    class="mt-2 rounded-lg max-w-xs">{% endif %}
+                                <div class="ml-4">
+                                    <form method="POST"
+                                        action="{{ url_for('traveller.delete_review_route', review_id=review._id) }}"
+                                        onsubmit="return confirm('Are you sure you want to delete this review?')">
+                                        <button type="submit" class="text-red-500 hover:text-red-400 transition"
+                                            title="Delete Review">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                             {% endfor %}
                             <!-- Jodi kono review na thake, tahole ei message dekhabe. -->
@@ -317,6 +334,57 @@
                             <div class="text-center py-8 text-gray-500">
                                 <i class="far fa-comment-dots fa-2x"></i>
                                 <p class="mt-2">You haven't written any reviews yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: My Bookings -->
+                <div id="bookings" class="tab-content">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white border-b pb-4 border-gray-700">My Bookings</h3>
+                        <div class="mt-4">
+                            {% if bookings and bookings|length > 0 %}
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Space</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Check-in</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Check-out</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Guests</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Price/night</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Status</th>
+                                            <th class="px-4 py-2 text-left text-sm text-gray-400">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        {% for b in bookings %}
+                                        <tr>
+                                            <td class="px-4 py-2">{{ b.space_title or 'Unknown' }}</td>
+                                            <td class="px-4 py-2">{{ b.check_in_date or b.check_in or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.check_out_date or b.check_out or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.guests or 1 }}</td>
+                                            <td class="px-4 py-2">{{ b.price_per_night or 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ b.status or 'Confirmed' }}</td>
+                                            <td class="px-4 py-2">
+                                                <form method="post"
+                                                    action="{{ url_for('traveller.cancel_booking_route', booking_id=b._id if b._id else b['_id']) }}"
+                                                    style="display:inline">
+                                                    <button type="submit"
+                                                        class="px-3 py-1 bg-red-600 text-white rounded"
+                                                        onclick="return confirm('Cancel this booking?')">Cancel</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <p>You have no bookings yet.</p>
                             </div>
                             {% endif %}
                         </div>
@@ -341,7 +409,7 @@
                     </div>
                 </div>
                 <!-- Modal Body and Form: Ekhane profile edit korar form ta ache. -->
-                <form id="profile-edit-form" action="{{ url_for('traveler_profiles.update_profile') }}" method="POST"
+                <form id="profile-edit-form" action="{{ url_for('traveller.update_profile') }}" method="POST"
                     enctype="multipart/form-data" class="mt-4 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Bam Dike: Form er input field gulo. -->

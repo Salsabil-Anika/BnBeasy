@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Property | BnBeasy{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="padding-top: 2rem;">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h2>Edit Property</h2>
+            <p>Update your listing details</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Title</label>
+                <input name="title" class="form-input" value="{{ listing.space_title or listing.title }}" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>City</label>
+                    <input name="city" class="form-input" value="{{ listing.location_city or listing.city }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input name="location" class="form-input" value="{{ listing.location or listing.city }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Price per night ($)</label>
+                <input type="number" name="price" class="form-input"
+                    value="{{ listing.price_per_night or listing.price }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" class="form-input" rows="4"
+                    style="resize: vertical;">{{ listing.description }}</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="number" step="any" name="latitude" class="form-input" value="{{ listing.latitude }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="number" step="any" name="longitude" class="form-input" value="{{ listing.longitude }}"
+                        required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Current Image</label>
+                {% if listing.get('photos') and listing.photos|length > 0 %}
+                <img src="{{ url_for('static', filename='uploads/' + listing.photos[0]) }}"
+                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                {% elif listing.get('image') %}
+                <img src="{{ url_for('static', filename='uploads/' + listing.image) }}"
+                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                {% else %}
+                <p>No image uploaded</p>
+                {% endif %}
+
+                <label style="display: block; margin-top: 0.5rem; color: var(--text-color);">Update Image
+                    (Optional)</label>
+                <input type="file" name="image" class="form-input" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">Amenities</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    {% set current_amenities = listing.amenities or [] %}
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Wifi" {% if 'Wifi' in current_amenities
+                            %}checked{% endif %}> Wifi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Kitchen" {% if 'Kitchen' in current_amenities
+                            %}checked{% endif %}> Kitchen
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Parking" {% if 'Parking' in current_amenities
+                            %}checked{% endif %}> Free Parking
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <input type="checkbox" name="amenities" value="Pool" {% if 'Pool' in current_amenities
+                            %}checked{% endif %}> Pool
+                    </label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn" style="flex: 1;">Update Listing</button>
+                <a href="{{ url_for('host.dashboard') }}" class="btn"
+                    style="flex: 1; background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); text-align: center; line-height: normal; display: flex; align-items: center; justify-content: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

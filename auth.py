@@ -19,7 +19,7 @@ def register():
         # Generate OTP
         otp = str(random.randint(100000, 999999))
         
-        # Store registration data and OTP in session
+        # Store registration data and OTP in session first
         session['reg_data'] = {
             'name': name,
             'email': email,
@@ -27,12 +27,20 @@ def register():
             'role': role,
             'otp': otp
         }
+        print(f"Stored reg_data in session for {email}. OTP: {otp}")
         
+        # Send OTP email
         try:
+            print("Calling send_otp_email...")
             send_otp_email(email, otp)
+            print("Redirecting to verify_otp...")
             return redirect(url_for("auth.verify_otp"))
         except Exception as e:
-            return render_template("register.html", status="fail", message=f"Failed to send OTP: {str(e)}"), 500
+            print(f"Exception during email send: {e}")
+            # If email fails, clear session to prevent stale data
+            session.pop('reg_data', None)
+            message = f"Error sending verification email: {str(e)}"
+            return render_template("register.html", status="fail", message=message), 500
         
     return render_template("register.html")
 
@@ -71,6 +79,13 @@ def login():
         session["role"] = user["role"]
         # store a friendly identifier used in templates
         session["user"] = user.get("email") or user.get("name")
+        
+        # Store name parts for profile/review display
+        full_name = user.get("name", "")
+        parts = full_name.split(" ", 1)
+        session["first_name"] = parts[0] if parts else ""
+        session["last_name"] = parts[1] if len(parts) > 1 else ""
+        session["name"] = full_name
 
         if user["role"] == "host":
             return redirect(url_for("host.dashboard"))
@@ -80,7 +95,7 @@ def login():
     return render_template("login.html")
 
 
-    
+
 
 @auth_bp.route("/logout")
 def logout():

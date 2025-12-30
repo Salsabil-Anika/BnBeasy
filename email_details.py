@@ -1,5 +1,3 @@
-# email_utils.py
-
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -21,10 +19,16 @@ This OTP will expire in 5 minutes.
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
+    print(f"Attempting to send OTP email to {receiver_email}...")
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print("Email sent successfully.")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise e
 
 def send_booking_confirmation(receiver_email, booking_details):
     sender_email = "anika.salsabil1@g.bracu.ac.bd"
@@ -51,7 +55,13 @@ Thank you for choosing BnBeasy!
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
+    print(f"Attempting to send booking confirmation to {receiver_email}...")
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print("Booking confirmation email sent.")
+    except Exception as e:
+        print(f"Failed to send booking confirmation email: {e}")
+  

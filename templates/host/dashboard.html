@@ -38,21 +38,24 @@
         </div>
     </div>
 
-    <h2 style="margin-bottom: 1.5rem; margin-top: 3rem;">Your Listings</h2>
+    <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text-color); margin-bottom: 2rem; margin-top: 3rem;">
+        Your Listings</h2>
 
     <div
-        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
         {% for listing in listings %}
         <div
-            style="background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-color);">
-            <div style="height: 180px; background-color: #2d3748; position: relative;">
+            style="background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; position: relative; display: flex; flex-direction: column;">
+
+            <!-- Image Section -->
+            <div style="aspect-ratio: 4/3; background-color: #2d3748; position: relative; overflow: hidden;">
                 {% if listing.image %}
                 <img src="{{ url_for('static', filename='uploads/' + listing.image) }}"
-                    style="width: 100%; height: 100%; object-fit: cover;">
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;">
                 {% else %}
                 <div
-                    style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">
-                    No Image
+                    style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); background: #1f2937;">
+                    <span style="font-size: 2rem;">🏠</span>
                 </div>
                 {% endif %}
                 <span
@@ -63,15 +66,49 @@
             <div style="padding: 1.25rem;">
                 <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">{{ listing.title }}</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem;">{{ listing.city }}</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <a href="{{ url_for('host.edit_listing', listing_id=listing._id) }}" class="btn"
+                        style="flex: 1; padding: 0.4rem; font-size: 0.8rem; background: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); text-align: center; text-decoration: none;">Edit</a>
+                    <a href="{{ url_for('host.get_reviews_by_listing', listing_id=listing._id) }}" class="btn"
+                        style="flex: 1; padding: 0.4rem; font-size: 0.8rem; background: var(--primary-color); color: white; border: none; text-align: center; text-decoration: none;">Reviews</a>
+                    <form action="{{ url_for('host.delete_listing_route', listing_id=listing._id) }}" method="POST"
+                        style="flex: 1;" onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                        <button class="btn"
+                            style="width: 100%; padding: 0.4rem; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid var(--error-color);">Delete</button>
+                    </form>
+                </div>
             </div>
         </div>
         {% endfor %}
 
         <!-- Add Listing Card -->
-        <a href="{{ url_for('host.add_listing_route') }}"
-            style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 280px; background: transparent; border: 2px dashed var(--border-color); border-radius: var(--radius); text-decoration: none; color: var(--text-muted); transition: all 0.2s;">
-            <span style="font-size: 3rem; margin-bottom: 1rem;">+</span>
-            <span style="font-size: 1.1rem; font-weight: 500;">Add New Listing</span>
+        <a href="{{ url_for('host.add_listing_route') }}" class="add-listing-card"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px; background: transparent; border: 2px dashed var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-muted); transition: all 0.2s; cursor: pointer;">
+            <div
+                style="width: 50px; height: 50px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--text-color);">
+                <span style="font-size: 1.5rem;">+</span>
+            </div>
+            <span style="font-size: 1rem; font-weight: 600;">Create new listing</span>
+        </a>
+    </div>
+
+    <!-- Community Resources Section -->
+    <div
+        style="margin-top: 3rem; padding: 2rem; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color);">
+        <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">Community & Resources</h2>
+        <a href="{{ url_for('host_community.community_home') }}" style="text-decoration: none; color: inherit;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="background: var(--primary-color); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white;">
+                    💬
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Host Community Forum</h3>
+                    <p style="margin: 0.25rem 0 0 0; color: var(--text-muted);">Discuss, share tips, and connect with
+                        other
+                        hosts.</p>
+                </div>
+            </div>
         </a>
     </div>
 </div>
