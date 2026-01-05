@@ -9,7 +9,7 @@ def get_db():
     # This is called inside workers after forking to avoid "Opened before fork" warnings
     uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
     client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-    return client["BnBeasy"]
+    return client["Bnbeasy"]
 
 class CollectionProxy:
     def __init__(self, collection_name):
