@@ -2,12 +2,12 @@ from config import db
 from datetime import datetime
 from bson.objectid import ObjectId
 
-try:
-    reviews_collection = db.reviews
-    reviews_collection.create_index("space_id")
-    print("Review Model: MongoDB connected successfully.")
-except Exception as e:
-    print(f"Review Model: Error initializing reviews collection: {e}")
+# Indexing can be done manually in Atlas or lazily
+reviews_collection = db.reviews
+# try:
+#     reviews_collection.create_index("space_id")
+# except:
+#     pass
 
 def create_review(review_data):
     """Creates a new review."""

@@ -1,20 +1,16 @@
 # models/community.py
 
-import os
-from pymongo import MongoClient, DESCENDING
+from config import db
+from pymongo import DESCENDING
 from bson import ObjectId
 from datetime import datetime
 
-# --- MongoDB Connect ---
-try:
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/Bnbeasy")
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-    db = client.get_database("Bnbeasy")
-    community_collection = db.community_threads
-    community_collection.create_index([("created_at", DESCENDING)])
-    print("Community Model: MongoDB connected successfully.")
-except Exception as e:
-    print(f"Community Model: Error connecting to MongoDB: {e}")
+# --- Collection Setup ---
+community_collection = db.community_threads
+# try:
+#     community_collection.create_index([("created_at", DESCENDING)])
+# except:
+#     pass
 
 # --- CRUD helpers ---
 
