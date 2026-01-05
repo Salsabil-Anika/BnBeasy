@@ -1,4 +1,3 @@
-# routes/auth.py
 from flask import render_template, request, redirect, url_for, session, flash
 from models.user import add_user, verify_user, get_user_by_email
 from email_details import send_otp_email
