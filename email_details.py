@@ -19,13 +19,11 @@ This OTP will expire in 5 minutes.
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    print(f"DEBUG: Attempting to connect to smtp.gmail.com on port 587 for {receiver_email}...")
+    print(f"DEBUG: Attempting to connect to smtp.gmail.com on port 465 for {receiver_email}...")
     try:
-        # Added a 10-second timeout to prevent the app from hanging forever
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-            print("DEBUG: SMTP Connection established. Starting TLS...")
-            server.starttls()
-            print("DEBUG: TLS started. Logging in...")
+        # Port 465 with SMTP_SSL is often more reliable on Render/Cloud platforms
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+            print("DEBUG: SSL Connection established. Logging in...")
             server.login(sender_email, sender_password)
             print("DEBUG: Logged in. Sending message...")
             server.send_message(msg)
