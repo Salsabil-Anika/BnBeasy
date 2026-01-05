@@ -1,9 +1,9 @@
 from flask import Flask, render_template, session, redirect, url_for, request
 import os
-from config import listings_collection
+from config import listings_collection, SECRET_KEY
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = SECRET_KEY
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static/uploads')
 
 # Import blueprints from the routes package
