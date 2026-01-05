@@ -19,15 +19,19 @@ This OTP will expire in 5 minutes.
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    print(f"Attempting to send OTP email to {receiver_email}...")
+    print(f"DEBUG: Attempting to connect to smtp.gmail.com on port 587 for {receiver_email}...")
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        # Added a 10-second timeout to prevent the app from hanging forever
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+            print("DEBUG: SMTP Connection established. Starting TLS...")
             server.starttls()
+            print("DEBUG: TLS started. Logging in...")
             server.login(sender_email, sender_password)
+            print("DEBUG: Logged in. Sending message...")
             server.send_message(msg)
-        print("Email sent successfully.")
+        print("DEBUG: Email sent successfully.")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"DEBUG Error: Failed to send email: {e}")
         raise e
 
 def send_booking_confirmation(receiver_email, booking_details):

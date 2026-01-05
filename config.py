@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-client = MongoClient(MONGO_URI)
+# Added 5-second timeout so the app fails fast instead of hanging if the DB is unreachable
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 
 db = client["Bnbeasy"]
 users_collection = db["users"]
