@@ -1,6 +1,10 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 
 {% block title %}Login - BnBeasy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="auth-container">

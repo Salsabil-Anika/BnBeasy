@@ -1,6 +1,10 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 
 {% block title %}Host Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">

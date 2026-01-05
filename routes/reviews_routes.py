@@ -1,10 +1,12 @@
+# routes/reviews.py
 from flask import render_template, request, session, redirect, url_for, flash, current_app
-from . import reviews_bp
 from config import listings_collection, users_collection
 from bson.objectid import ObjectId
 import os
 from werkzeug.utils import secure_filename
 from models.review import create_review
+
+from . import reviews_bp
 
 @reviews_bp.route('/submit/<space_id>', methods=['GET', 'POST'])
 def submit_review(space_id):
@@ -15,9 +17,6 @@ def submit_review(space_id):
     user_id = session['user_id']
     user = users_collection.find_one({"_id": ObjectId(user_id)})
     
-    # Try finding in spaces first, then listings (support both schemas if needed, 
-    # but based on recent changes we mostly use listings_collection for new stuff)
-    # Actually, listing_details uses listings_collection.
     space = listings_collection.find_one({"_id": ObjectId(space_id)})
     
     if not space:
@@ -45,7 +44,7 @@ def submit_review(space_id):
 
         review_data = {
             "user_id": ObjectId(user_id),
-            "space_id": ObjectId(space_id), # Linking to the listing
+            "space_id": ObjectId(space_id), 
             "rating": int(rating),
             "comment": comment,
             "photo": photo_filename,
@@ -56,11 +55,7 @@ def submit_review(space_id):
         flash("Review submitted successfully!", "success")
         return redirect(url_for('traveller.view_listing', listing_id=space_id))
 
-    # For GET request, render the form
-    # We need to pass 'space' object which template expects
-    # Template expects space.space_title or space.name
-    # Normalized:
     if not space.get('space_title'):
         space['space_title'] = space.get('title')
         
-    return render_template('submit_review.html', space=space, user=user)
+    return render_template('reviews/submit_review.html', space=space, user=user)
